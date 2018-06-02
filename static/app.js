@@ -20,12 +20,16 @@ $(document).ready(function () {
         });
     });
 
-    // Event handler for server sent data.
-    // The callback function is invoked whenever the server emits data
-    // to the client. The data is then displayed in the "Received"
-    // section of the page.
-    socket.on('my_response', function (msg) {
-        $('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+    // flame response 
+    socket.on('flame_response', function (msg) {
+        $('#log').append('<br>' + $('<div/>').text('Received #' + msg.time + ': ' + msg.data).html());
+    });
+
+    // temp_hum response 
+    socket.on('temp_hum_response', function (msg) {
+        console.log(msg);
+        $('#temp_id').html(msg.temp);
+        $('#hum_id').html(msg.hum);
     });
 
     // Interval function that tests message latency by sending a "ping"
