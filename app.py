@@ -49,20 +49,6 @@ thread = None
 thread_lock = Lock()
 
 
-# while True:
-#     time.sleep(0.1)
-#     f = GPIO.input(local_modules.flame_pin)
-#     print("Got" , f)
-
-# # background thread calls (bgt)
-# def background_thread():
-#     """Example of how to send server generated events to clients."""
-#     count = 0
-#     while True:
-#         socketio.sleep(1)
-#         count += 1
-#         socketio.emit('my_response', {'data': 'Server generated event', 'count': count}, namespace='/test')
-
 
 def flame_sensor_bgt():
     while True:
@@ -70,10 +56,11 @@ def flame_sensor_bgt():
         if f == 1:
             print ("detected")
             current_time = time.ctime()
-            socketio.emit('flame_response', {'data': 'Fire Detected', 'time': current_time}, namespace='/test')
+            socketio.emit('flame_response', {'flame': f, 'time': current_time}, namespace='/test')
             time.sleep(10)
         else:
             socketio.sleep(0.1)
+            socketio.emit('flame_response', {'flame': 0, 'time': current_time}, namespace='/test')
 
 
 def temp_hum_sensor_bgt():
@@ -85,6 +72,29 @@ def temp_hum_sensor_bgt():
             time.sleep(5)
         else:
             socketio.sleep(3)
+
+
+def motion_sensor_bgt():
+    while True:
+        motion = GPIO.input(motion_pin)
+        if motion:
+            current_time = time.ctime()
+            socketio.emit('motion_response', {'detected': motion}, namespace='/test')
+            time.sleep(15)
+        else:
+            socketio.sleep(0.3)
+            socketio.emit('motion_response', {'detected': 0}, namespace='/test')
+
+def vibration_sensor_bgt():
+    while True:
+        vibration = GPIO.input(vibration_pin)
+        if vibration:
+            current_time = time.ctime()
+            socketio.emit('vibration_response', {'detected': vibration}, namespace='/test')
+            time.sleep(15)
+        else:
+            socketio.sleep(0.3)
+            socketio.emit('vibration_response', {'detected': 0}, namespace='/test')
 
 
 
@@ -101,14 +111,6 @@ def ping_pong():
     emit('my_pong')
 
 
-# @socketio.on('connect', namespace='/test')
-# def test_connect():
-#     global thread
-#     with thread_lock:
-#         if thread is None:
-#             thread = socketio.start_background_task(target=background_thread)
-#     emit('my_response', {'data': 'Server Connected', 'count': 0})
-
 
 @socketio.on('connect', namespace='/test')
 def flame_sensor_job():
@@ -116,17 +118,14 @@ def flame_sensor_job():
     with thread_lock:
         if thread is None:
             thread = socketio.start_background_task(target=flame_sensor_bgt)
-    emit('flame_response', {'data': 'Flame Sensor Connected', 'time': 0})
-
-
-@socketio.on('connect', namespace='/test')
-def temp_hum_sensor_job():
-    global thread
-    with thread_lock:
-        if thread is None:
             thread = socketio.start_background_task(target=temp_hum_sensor_bgt)
-    socketio.emit('temp_hum_response', {'temp': 0.0, 'hum': 0.0, 'time': 0}, namespace='/test')
-    emit('sensor_connection_response', {'data': 'Flame Sensor Connected', 'time': 0})
+            thread = socketio.start_background_task(target=motion_sensor_bgt)
+            thread = socketio.start_background_task(target=vibration_sensor_bgt)
+            
+        emit('flame_response', {'flame': 0, 'time': 0})
+        emit('temp_hum_response', {'temp': 0.0, 'hum': 0.0, 'time': 0}, namespace='/test')
+        emit('motion_response', {'detected': 0}, namespace='/test')
+        emit('vibration_response', {'detected': 0}, namespace='/test')
 
 
 

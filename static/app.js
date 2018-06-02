@@ -6,6 +6,9 @@ $(document).ready(function () {
     // can set the namespace to an empty string.
     namespace = '/test';
 
+   
+    toastr.info("Are you the 6 fingered man?");
+
     // Connect to the Socket.IO server.
     // The connection URL has the following format:
     //     http[s]://<domain>:<port>[/<namespace>]
@@ -22,7 +25,9 @@ $(document).ready(function () {
 
     // flame response 
     socket.on('flame_response', function (msg) {
-        $('#log').append('<br>' + $('<div/>').text('Received #' + msg.time + ': ' + msg.data).html());
+        console.log(msg);
+        // $('#log').append('<br>' + $('<div/>').text('Received #' + msg.time + ': ' + msg.data).html());
+        $('#smoke_fire_id').html(msg.flame)
     });
 
     // temp_hum response 
@@ -30,6 +35,17 @@ $(document).ready(function () {
         console.log(msg);
         $('#temp_id').html(msg.temp);
         $('#hum_id').html(msg.hum);
+    });
+
+    // motion response 
+    socket.on('motion_response', function (msg) {
+        console.log(msg);
+        $('#motion_id').html(msg.detected);
+    });
+    // vibration response 
+    socket.on('vibration_response', function (msg) {
+        console.log(msg);
+        $('#vibration_id').html(msg.detected);
     });
 
     // Interval function that tests message latency by sending a "ping"
