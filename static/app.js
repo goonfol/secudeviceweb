@@ -6,8 +6,24 @@ $(document).ready(function () {
     // can set the namespace to an empty string.
     namespace = '/test';
 
-   
-    toastr.info("Are you the 6 fingered man?");
+    toastr.options = {
+        "closeButton": true,
+        "debug": false,
+        "newestOnTop": true,
+        // "progressBar": true,
+        "positionClass": "toast-top-right",
+        "preventDuplicates": true,
+        "onclick": null,
+        "showDuration": "300",
+        "hideDuration": "1000",
+        // "timeOut": "5000",
+        // "extendedTimeOut": "1000",
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut"
+    }
+    
 
     // Connect to the Socket.IO server.
     // The connection URL has the following format:
@@ -21,31 +37,87 @@ $(document).ready(function () {
         socket.emit('my_event', {
             data: 'I\'m connected!'
         });
+        toastr.success("Welcome to Secuvallence, All Modules Functioning");
     });
 
     // flame response 
     socket.on('flame_response', function (msg) {
-        console.log(msg);
+        // console.log(msg);
         // $('#log').append('<br>' + $('<div/>').text('Received #' + msg.time + ': ' + msg.data).html());
-        $('#smoke_fire_id').html(msg.flame)
+        $('#smoke_fire_id').html(msg.flame);
+        if (msg.flame){
+            toastr.error("Fire/Gas/Smoke Detected!", 'Alarm!!!', {
+                timeOut: 10000,
+                "tapToDismiss": false,
+                "timeOut": 0,
+                "extendedTimeOut": 0,
+                "progressBar": false,
+            });
+        }
     });
 
     // temp_hum response 
     socket.on('temp_hum_response', function (msg) {
-        console.log(msg);
+        // console.log(msg);
         $('#temp_id').html(msg.temp);
         $('#hum_id').html(msg.hum);
     });
 
     // motion response 
     socket.on('motion_response', function (msg) {
-        console.log(msg);
+        // console.log(msg);
         $('#motion_id').html(msg.detected);
+        if (msg.detected) {
+            toastr.warning('Unusual Motion Detected!', {
+                "tapToDismiss": false,
+                "timeOut": 10000,
+                "extendedTimeOut": 0,
+                "progressBar": false,
+            });
+        }
     });
     // vibration response 
     socket.on('vibration_response', function (msg) {
-        console.log(msg);
+        // console.log(msg);
         $('#vibration_id').html(msg.detected);
+        if (msg.detected) {
+            toastr.warning('Unusual Vibration Detected!', {
+                "tapToDismiss": false,
+                "timeOut": 10000,
+                "extendedTimeOut": 0,
+                "progressBar": false,
+            });
+        }
+    });
+    // magnetic response 
+    socket.on('magnetic_response', function (msg) {
+        console.log(msg);
+        $('#magnetic_id').html(msg.state);
+        if (msg.state) {
+            toastr.warning('Door Opened', {
+                timeOut: 10000,
+                "tapToDismiss": false,
+                "timeOut": 0,
+                "extendedTimeOut": 0,
+                "progressBar": false,
+            });
+        }
+    });
+    // siren response 
+    socket.on('siren_response', function (msg) {
+        // console.log(msg);
+        
+        if (!msg.state) {
+            $('#siren_id').html(msg.state);
+            toastr.error('Got a Panic Call!!!', {
+                "tapToDismiss": false,
+                "timeOut": 10000,
+                "extendedTimeOut": 0,
+                "progressBar": false,
+            });
+        } else {
+            $('#siren_id').html('Safe');
+        }
     });
 
     // Interval function that tests message latency by sending a "ping"

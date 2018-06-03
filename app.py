@@ -33,6 +33,7 @@ GPIO.setup(buzzer_pin, GPIO.OUT)
 GPIO.setup(motion_pin, GPIO.IN)
 GPIO.setup(temp_hum_pin, GPIO.IN)
 GPIO.setup(flame_pin, GPIO.IN)
+GPIO.setup(siren_btn_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(gas_smoke_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(vibration_pin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 GPIO.setup(magnetic_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
@@ -49,12 +50,11 @@ thread = None
 thread_lock = Lock()
 
 
-
 def flame_sensor_bgt():
     while True:
         f = GPIO.input(flame_pin)
-        if f == 1:
-            print ("detected")
+        g = GPIO.input(gas_smoke_pin)
+        if f == 1 or g == 1:
             current_time = time.ctime()
             socketio.emit('flame_response', {'flame': f, 'time': current_time}, namespace='/test')
             time.sleep(10)
@@ -97,6 +97,20 @@ def vibration_sensor_bgt():
             socketio.emit('vibration_response', {'detected': 0}, namespace='/test')
 
 
+def magnetic_sensor_bgt():
+    while True:
+        magnetic = GPIO.input(magnetic_pin)
+        socketio.emit('magnetic_response', {'state': magnetic}, namespace='/test')
+        socketio.sleep(0.1)
+
+
+def siren_sensor_bgt():
+    while True:
+        siren = GPIO.input(siren_btn_pin)
+        socketio.sleep(0.1)
+        socketio.emit('siren_response', {'state': siren}, namespace='/test')
+
+
 
 # routes
 @app.route('/')
@@ -121,11 +135,15 @@ def flame_sensor_job():
             thread = socketio.start_background_task(target=temp_hum_sensor_bgt)
             thread = socketio.start_background_task(target=motion_sensor_bgt)
             thread = socketio.start_background_task(target=vibration_sensor_bgt)
+            thread = socketio.start_background_task(target=magnetic_sensor_bgt)
+            thread = socketio.start_background_task(target=siren_sensor_bgt)
             
         emit('flame_response', {'flame': 0, 'time': 0})
         emit('temp_hum_response', {'temp': 0.0, 'hum': 0.0, 'time': 0}, namespace='/test')
         emit('motion_response', {'detected': 0}, namespace='/test')
         emit('vibration_response', {'detected': 0}, namespace='/test')
+        emit('magnetic_response', {'state': 0}, namespace='/test')
+        emit('siren_response', {'state': 1}, namespace='/test')
 
 
 
