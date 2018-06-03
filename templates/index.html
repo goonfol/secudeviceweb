@@ -28,7 +28,7 @@
                     <a class="active" href="/">Home</a>
                 </li>
                 <li>
-                    <a href="/about.html">About</a>
+                    <a href="/about">About</a>
                 </li>
                 <li class="float-right">
                     <a href="#">
@@ -77,11 +77,15 @@
                     <i class="fas fa-thermometer-quarter fa-fw"></i>
                 </div>
             </div>
+            
+        </div>
+        <div class="row">
             <div class="column card yeallow">
                 <div class="card-text">
-                    Motion: <span id="motion_id"></span>
-                    <br>
-                    Vibration: <span id="vibration_id"></span>
+                    Motion:
+                    <span id="motion_id"></span>
+                    <br> Vibration:
+                    <span id="vibration_id"></span>
                 </div>
                 <div class="card-body-icon">
                     <i class="fas fa-exclamation fa-fw"></i>
@@ -89,9 +93,10 @@
             </div>
             <div class="column card red">
                 <div class="card-text">
-                    Panic Button: <span id="panic_id"></span>
-                    <br>
-                    Gas/Smoke/Fire:<span id="smoke_fire_id"></span>
+                    Panic Button:
+                    <span id="panic_id"></span>
+                    <br> Gas/Smoke/Fire:
+                    <span id="smoke_fire_id"></span>
                 </div>
                 <div class="card-body-icon">
                     <!-- <i class="fas fa-exclamation-triangle fa-fw"></i> -->
@@ -102,22 +107,23 @@
 
         <hr>
 
-        <div class="row">
+        <!-- <div class="row">
             <div class="column">
                 <h5> <i class="fas fa-video fa-fw"></i> Live Video Output</h1>
                 <img src="http://via.placeholder.com/800x480?text=Live+Video">
             </div>
             <div class="column">
-                <!-- <h2>Flask-SocketIO Test</h1> -->
-                <!-- <p>Async mode is: <b>{{ async_mode }}</b></p>
-                <p>Average ping/pong latency: <b><span id="ping-pong"></span>ms</b></p> -->
                 
                 <h5> <i class="fas fa-sync fa-spin"></i> Notifications:</h2>
                 <div id="log" style="max-height: 250px; overflow-y: scroll;"></div>
             </div>
-        </div>
+        </div> -->
 
     </div>
+
+    <footer class="footer">
+        Device and System By - <a href="#">GoonFol</a>
+    </footer>
     
 </body>
 </html>

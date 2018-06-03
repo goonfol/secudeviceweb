@@ -56,7 +56,8 @@ hr {
     margin-right: 10px;
     color: white;
     padding: 15px !important;
-    margin-bottom: 15px;
+    margin-bottom: 15px !important;
+    min-height: 125px;
 }
 .card-body-icon {
     position: absolute;
@@ -82,4 +83,14 @@ hr {
 }
 .red {
     background-color: #dc3545;
+}
+
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background-color: #353a40;
+    color: white;
+    text-align: center;
 }

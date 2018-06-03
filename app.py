@@ -3,6 +3,8 @@ from threading import Lock
 from flask import Flask, render_template, session, request
 from flask_socketio import SocketIO, emit
 import time
+import serial
+import sys
 
 import RPi.GPIO as GPIO
 from gpiozero import LED, Buzzer, MotionSensor
@@ -10,6 +12,65 @@ import Adafruit_DHT
 
 # local modules
 import local_modules
+# from sim_module import gsm
+
+
+class gsm():
+    echo_on = 1
+
+    def __init__(self, serialPort):
+        self.serialPort = serialPort
+
+    def sendCommand(self, at_command):
+        self.serialPort.write(at_command + '\r')
+
+    def getResponse(self):
+        self.serialPort.flushInput()
+        self.serialPort.flushOutput()
+        if gsm.echo_on == 1:
+            response = self.serialPort.readline()  # comment this line if echo off
+        response = self.serialPort.readline()
+        response = response.rstrip()
+        return response
+
+    def getPrompt(self):
+        if gsm.echo_on == 1:
+            response = self.serialPort.readline()  # comment this line if echo off
+        if (self.serialPort.readline(1) == '>'):
+            return True
+        else:
+            return False
+
+    def sendMessage(self, phone_number, message):
+        flag = False
+        self.sendCommand('AT+CMGS=\"' + phone_number + '\"')
+        time.sleep(2)
+        # print ('SUCCESS')
+        self.serialPort.write(message)
+        self.serialPort.write('\x1A')  # send messsage if prompt received
+        flag = True
+
+        time.sleep(5)
+        return flag
+
+    def readMessage(self):
+        flag = False
+        message = ''
+        self.sendCommand('AT+CMGR=1')
+        self.serialPort.flushInput()
+        self.serialPort.flushOutput()
+        self.serialPort.readline().rstrip()
+        while True:
+            response = self.serialPort.readline().rstrip()
+            if len(response) > 1:
+                if response == 'OK':
+                    break
+                else:
+                    message = message + " " + response
+                    flag = True
+
+        return flag, message
+
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(True)
@@ -50,13 +111,61 @@ thread = None
 thread_lock = Lock()
 
 
+
+def send_message_on_alarm(phn_number, mgs_text):
+    gsm_ser = serial.Serial()
+    gsm_ser.port = "/dev/ttyAMA0"
+    gsm_ser.baudrate = 9600
+    gsm_ser.timeout = 1
+
+    try:
+        gsm_ser.open()
+        gsm_ser.flushInput()
+        gsm_ser.flushOutput()
+    except:
+        print ('Cannot open serial port')
+        sys.exit()
+
+    GSM = gsm(gsm_ser)
+
+    GSM.sendCommand("AT")
+    print (GSM.getResponse())
+
+    time.sleep(.1)
+
+    GSM.sendCommand("AT+CMGF=1;&W")
+    print (GSM.getResponse())
+
+    time.sleep(.1)
+
+    GSM.sendCommand("AT+CREG?")
+    print (GSM.getResponse())
+
+    time.sleep(.1)
+
+    status, msg = GSM.readMessage()
+    if status == 0:
+        print ('No new messages')
+    else:
+        print ('New messages arrived: ' + msg)
+    
+    if (GSM.sendMessage(phn_number, mgs_text)):
+        print ('Message sending Success')
+    else:
+        print ('Message sending Failed')
+
+    time.sleep(.1)
+    gsm_ser.close()
+
+
 def flame_sensor_bgt():
     while True:
         f = GPIO.input(flame_pin)
-        g = GPIO.input(gas_smoke_pin)
-        if f == 1 or g == 1:
-            current_time = time.ctime()
+        # g = GPIO.input(gas_smoke_pin)
+        current_time = time.ctime()
+        if f == 1:
             socketio.emit('flame_response', {'flame': f, 'time': current_time}, namespace='/test')
+            send_message_on_alarm("01821081270", "Fire Alarm Text @ {}".format(current_time))
             time.sleep(10)
         else:
             socketio.sleep(0.1)
@@ -117,6 +226,10 @@ def siren_sensor_bgt():
 def index():
     return render_template('index.html', async_mode=socketio.async_mode)
 
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
 
 
 # socket calls
@@ -137,6 +250,9 @@ def flame_sensor_job():
             thread = socketio.start_background_task(target=vibration_sensor_bgt)
             thread = socketio.start_background_task(target=magnetic_sensor_bgt)
             thread = socketio.start_background_task(target=siren_sensor_bgt)
+
+            thread = socketio.start_background_task(target=buzzer_bgt)
+            thread = socketio.start_background_task(target=led_bgt)
             
         emit('flame_response', {'flame': 0, 'time': 0})
         emit('temp_hum_response', {'temp': 0.0, 'hum': 0.0, 'time': 0}, namespace='/test')

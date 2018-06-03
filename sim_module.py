@@ -33,7 +33,7 @@ class gsm():
         flag = False
         self.sendCommand('AT+CMGS=\"' + phone_number + '\"')
         time.sleep(2)
-        print ('SUCCESS')
+        # print ('SUCCESS')
         self.serialPort.write(message)
         self.serialPort.write('\x1A')  # send messsage if prompt received
         flag = True
@@ -102,10 +102,12 @@ if __name__ == "__main__":
     else:
         print ('new messages arrived: ' + msg)
 
-    if (GSM.sendMessage("01680139372", "HELLO MISTER") == True):
+    message_text = "Hello From Device :P"
+    phone_number = "01821081270"
+    if (GSM.sendMessage(phone_number, message_text)):
         print 'Message sending Success'
     else:
         print 'Message sending Failed'
+    
     time.sleep(.1)
-
     gsm_ser.close()

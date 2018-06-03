@@ -91,7 +91,7 @@ $(document).ready(function () {
     });
     // magnetic response 
     socket.on('magnetic_response', function (msg) {
-        console.log(msg);
+        // console.log(msg);
         $('#magnetic_id').html(msg.state);
         if (msg.state) {
             toastr.warning('Door Opened', {
