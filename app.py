@@ -178,7 +178,7 @@ def temp_hum_sensor_bgt():
         if humidity is not None and temperature is not None:
             current_time = time.ctime()
             socketio.emit('temp_hum_response', {'temp': round(temperature, 4), 'hum': round(humidity, 4), 'time': current_time}, namespace='/test')
-            time.sleep(5)
+            time.sleep(15)
         else:
             socketio.sleep(3)
 
@@ -188,7 +188,7 @@ def motion_sensor_bgt():
         motion = GPIO.input(motion_pin)
         if motion:
             current_time = time.ctime()
-            socketio.emit('motion_response', {'detected': motion}, namespace='/test')
+            socketio.emit('motion_response', {'detected': motion, 'time': current_time}, namespace='/test')
             time.sleep(15)
         else:
             socketio.sleep(0.3)
@@ -199,7 +199,7 @@ def vibration_sensor_bgt():
         vibration = GPIO.input(vibration_pin)
         if vibration:
             current_time = time.ctime()
-            socketio.emit('vibration_response', {'detected': vibration}, namespace='/test')
+            socketio.emit('vibration_response', {'detected': vibration, 'time': current_time}, namespace='/test')
             time.sleep(15)
         else:
             socketio.sleep(0.3)
@@ -208,16 +208,18 @@ def vibration_sensor_bgt():
 
 def magnetic_sensor_bgt():
     while True:
+        current_time = time.ctime()
         magnetic = GPIO.input(magnetic_pin)
-        socketio.emit('magnetic_response', {'state': magnetic}, namespace='/test')
+        socketio.emit('magnetic_response', {'state': magnetic, 'time': current_time}, namespace='/test')
         socketio.sleep(0.1)
 
 
 def siren_sensor_bgt():
     while True:
+        current_time = time.ctime()
         siren = GPIO.input(siren_btn_pin)
         socketio.sleep(0.1)
-        socketio.emit('siren_response', {'state': siren}, namespace='/test')
+        socketio.emit('siren_response', {'state': siren, 'time': current_time}, namespace='/test')
 
 
 

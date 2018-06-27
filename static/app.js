@@ -34,6 +34,7 @@ $(document).ready(function () {
     // The callback function is invoked when a connection with the
     // server is established.
     socket.on('connect', function () {
+
         socket.emit('my_event', {
             data: 'I\'m connected!'
         });
@@ -43,9 +44,10 @@ $(document).ready(function () {
     // flame response 
     socket.on('flame_response', function (msg) {
         // console.log(msg);
-        // $('#log').append('<br>' + $('<div/>').text('Received #' + msg.time + ': ' + msg.data).html());
+        
         $('#smoke_fire_id').html(msg.flame);
         if (msg.flame){
+            $('#log').append('<br>' + $('<div/>').text('Received #' + msg.time + ': ' + msg.flame).html());
             toastr.error("Fire/Gas/Smoke Detected!", 'Alarm!!!', {
                 timeOut: 10000,
                 "tapToDismiss": false,
@@ -61,6 +63,8 @@ $(document).ready(function () {
         // console.log(msg);
         $('#temp_id').html(msg.temp);
         $('#hum_id').html(msg.hum);
+
+        $('#log').append('<br>' + $('<div/>').text('Received Temp+Hum: ' + msg.temp + ', ' + msg.hum + ' @ ' + msg.time).html());
     });
 
     // motion response 
@@ -68,6 +72,7 @@ $(document).ready(function () {
         // console.log(msg);
         $('#motion_id').html(msg.detected);
         if (msg.detected) {
+            $('#log').append('<br>' + $('<div/>').text('Received Motion #' + msg.time + ': ' + msg.detected).html());
             toastr.warning('Unusual Motion Detected!', {
                 "tapToDismiss": false,
                 "timeOut": 10000,
@@ -81,6 +86,7 @@ $(document).ready(function () {
         // console.log(msg);
         $('#vibration_id').html(msg.detected);
         if (msg.detected) {
+            $('#log').append('<br>' + $('<div/>').text('Received Vibration #' + msg.time + ': ' + msg.detected).html());
             toastr.warning('Unusual Vibration Detected!', {
                 "tapToDismiss": false,
                 "timeOut": 10000,
@@ -92,7 +98,15 @@ $(document).ready(function () {
     // magnetic response 
     socket.on('magnetic_response', function (msg) {
         // console.log(msg);
-        $('#magnetic_id').html(msg.state);
+        if (msg.state) {
+            $('#magnetic_id').html("Open");
+            $('#log').append('<br>' + $('<div/>').text('Door Open #' + msg.time + ': ' + msg.state).html());
+        }
+        else {
+            $('#magnetic_id').html("Closed");
+            $('#log').append('<br>' + $('<div/>').text('Door Close #' + msg.time + ': ' + msg.state).html());
+        }
+        
         if (msg.state) {
             toastr.warning('Door Opened', {
                 timeOut: 10000,
@@ -108,6 +122,7 @@ $(document).ready(function () {
         // console.log(msg);
         
         if (!msg.state) {
+            $('#log').append('<br>' + $('<div/>').text('Received Panic Call #' + msg.time + ': ' + msg.state).html());
             $('#siren_id').html(msg.state);
             toastr.error('Got a Panic Call!!!', {
                 "tapToDismiss": false,
