@@ -1,4 +1,17 @@
 $(document).ready(function () {
+    $("#goole_live_map").googleMap({
+        zoom: 15, // Initial zoom level (optional)
+        coords: [23.7738159, 90.4106463], // Map center (optional)
+        type: "ROADMAP" // Map type (optional)
+    });
+
+    $("#goole_live_map").addMarker({
+        coords: [23.7738159, 90.4106463], // coords
+        title: 'Secu Device - 007',
+        text: 'Securex Pvt. Ltd',
+        // icon: 'https://www.google.com/mapfiles/marker_green.png',
+    });
+
     // Use a "/test" namespace.
     // An application can open a connection on multiple namespaces, and
     // Socket.IO will multiplex all those connections on a single
@@ -98,16 +111,9 @@ $(document).ready(function () {
     // magnetic response 
     socket.on('magnetic_response', function (msg) {
         // console.log(msg);
-        if (msg.state) {
+        if (msg.state == 1) {
             $('#magnetic_id').html("Open");
             $('#log').append('<br>' + $('<div/>').text('Door Open #' + msg.time + ': ' + msg.state).html());
-        }
-        else {
-            $('#magnetic_id').html("Closed");
-            $('#log').append('<br>' + $('<div/>').text('Door Close #' + msg.time + ': ' + msg.state).html());
-        }
-        
-        if (msg.state) {
             toastr.warning('Door Opened', {
                 timeOut: 10000,
                 "tapToDismiss": false,
@@ -116,23 +122,43 @@ $(document).ready(function () {
                 "progressBar": false,
             });
         }
+        else {
+            $('#magnetic_id').html("Closed");
+            $('#log').append('<br>' + $('<div/>').text('Door Close #' + msg.time + ': ' + msg.state).html());
+            toastr.warning('Door Closed', {
+                timeOut: 10000,
+                "tapToDismiss": false,
+                "timeOut": 0,
+                "extendedTimeOut": 0,
+                "progressBar": false,
+            });
+        }
+        
     });
     // siren response 
     socket.on('siren_response', function (msg) {
         // console.log(msg);
-        
-        if (!msg.state) {
-            $('#log').append('<br>' + $('<div/>').text('Received Panic Call #' + msg.time + ': ' + msg.state).html());
-            $('#siren_id').html(msg.state);
-            toastr.error('Got a Panic Call!!!', {
-                "tapToDismiss": false,
-                "timeOut": 10000,
-                "extendedTimeOut": 0,
-                "progressBar": false,
-            });
-        } else {
-            $('#siren_id').html('Safe');
-        }
+        $('#log').append('<br>' + $('<div/>').text('Received Panic Call #' + msg.time + ': ' + msg.state).html());
+        $('#siren_id').html(msg.state);
+        toastr.error('Got a Panic Call!!!', {
+            "tapToDismiss": false,
+            "timeOut": 10000,
+            "extendedTimeOut": 0,
+            "progressBar": false,
+        });
+    });
+
+    // attend response 
+    socket.on('attend_response', function (msg) {
+        console.log(msg);
+        $('#log').append('<br>' + $('<div/>').text('Received Attendance' + msg.time + ': ' + msg.state).html());
+        $('#siren_id').html(msg.state);
+        toastr.success('Received Attendance', {
+            "tapToDismiss": false,
+            "timeOut": 10000,
+            "extendedTimeOut": 0,
+            "progressBar": false,
+        });
     });
 
     // Interval function that tests message latency by sending a "ping"
